@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // Neonなどで pooled / direct を使い分ける場合:
+  // - DATABASE_URL: pooled（アプリ実行用）
+  // - DIRECT_URL: direct（マイグレーション用）
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  name      String?
+  passwordHash String? // メール/パスワード認証用（OAuth拡張も考慮して任意）
+  // 招待コードを通過したユーザー（初回のみ招待コード入力 → 以後は不要）
+  inviteAcceptedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  articles  Article[]
+  insights  Insight[]
+}
+
+model Article {
+  id          String    @id @default(cuid())
+  url         String
+  title       String
+  summary     String?
+  bodyLength  Int?      // 本文の文字数
+  readAt      DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
+  tags        ArticleTag[]
+  embedding   String?   // JSON 文字列としてベクトルを保存（ローカル用途）
+}
+
+model Tag {
+  id        String       @id @default(cuid())
+  name      String       @unique
+  createdAt DateTime     @default(now())
+  articles  ArticleTag[]
+}
+
+model ArticleTag {
+  article   Article @relation(fields: [articleId], references: [id])
+  articleId String
+  tag       Tag     @relation(fields: [tagId], references: [id])
+  tagId     String
+
+  @@id([articleId, tagId])
+}
+
+model Insight {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  weekStart DateTime
+  summary   String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, weekStart])
+}
+
