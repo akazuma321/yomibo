@@ -42,10 +42,7 @@ export default function PricingPage() {
       <section className="space-y-2">
         <h1 className="text-3xl font-bold text-slate-900">開発者を応援</h1>
         <p className="text-sm text-slate-600">
-          YOMIBOの開発を応援してくれたら嬉しいです（単発の支援です）。
-        </p>
-        <p className="text-sm text-slate-600">
-          いつもYOMIBOを楽しく使っていただき、ありがとうございます。
+          YOMIBOを楽しく使っていただき、いつもありがとうございます。YOMIBOの開発を少しでも応援してくれたら嬉しいです。サブスクではなく単発です。
         </p>
       </section>
 
