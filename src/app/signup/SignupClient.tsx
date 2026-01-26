@@ -119,14 +119,14 @@ export default function SignupClient() {
         )}
 
         <label className="block space-y-1">
-          <span className="text-xs font-medium text-slate-700">名前（任意）</span>
+          <span className="text-xs font-medium text-slate-700">ニックネーム（任意）</span>
           <input
             className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand-500"
             type="text"
             autoComplete="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="例: Ak"
+            placeholder="odendaikon"
           />
         </label>
 
