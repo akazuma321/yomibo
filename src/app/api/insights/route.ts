@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { generateWeeklyInsightSummary } from "@/lib/ai";
 import { auth } from "@/auth";
 
+export const dynamic = "force-dynamic";
+
+
 // GET: 直近数週間のインサイトを取得（簡易版: 読了記事の件数と代表タグをまとめるだけ）
 export async function GET(_req: NextRequest) {
   try {
