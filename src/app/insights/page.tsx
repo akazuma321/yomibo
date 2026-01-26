@@ -430,25 +430,6 @@ export default function InsightsPage() {
               </p>
             </>
           )}
-
-          {/* CuraQ風: Top3タグをXに投稿 */}
-          <div className="pt-1">
-            <button
-              type="button"
-              onClick={() => {
-                const top3 = (stats?.tags ?? []).slice(0, 3).map((t) => `#${t.name}`);
-                if (top3.length === 0) return;
-                const text = `最近の興味タグ: ${top3.join(" ")}\n\n#YOMIBO`;
-                const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-                window.open(url, "_blank", "noopener,noreferrer");
-              }}
-              disabled={stats.tags.length === 0}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-black px-6 py-3 text-xs font-medium text-white hover:bg-black/90"
-            >
-              <span className="text-sm">X</span>
-              Top3タグを投稿
-            </button>
-          </div>
         </section>
       )}
 
