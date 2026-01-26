@@ -56,7 +56,6 @@ export default function InviteClient() {
             type="text"
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            placeholder="招待コードを入力"
             required
           />
         </label>
