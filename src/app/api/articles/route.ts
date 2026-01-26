@@ -78,6 +78,8 @@ export async function POST(req: NextRequest) {
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const userEmail = (session?.user as any)?.email as string | undefined;
+    const userName = (session?.user as any)?.name as string | undefined;
 
     // URLからタイトル、説明、本文の文字数を取得
     let title = url;
