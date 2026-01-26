@@ -4,6 +4,7 @@ type SupportOption = {
   label: string;
   amountYen: number;
   description: string;
+  icon: React.ReactNode;
   href?: string;
 };
 
@@ -21,18 +22,114 @@ export default function PricingPage() {
       label: "コーヒー Small サイズ",
       amountYen: 300,
       description: "気軽に応援。開発のモチベになります。",
+      icon: (
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-700">
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            className="h-6 w-6"
+          >
+            <path
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M7 8h9v6a4 4 0 0 1-4 4H9a2 2 0 0 1-2-2V8Z"
+            />
+            <path
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M16 9h1a2 2 0 0 1 0 4h-1"
+            />
+            <path
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M8 6c0-1 1-2 2-2m0 2c0-1 1-2 2-2m0 2c0-1 1-2 2-2"
+            />
+          </svg>
+        </div>
+      ),
       href: safeLink(process.env.SUPPORT_LINK_COFFEE_SMALL_300)
     },
     {
       label: "コーヒー Venti サイズ",
       amountYen: 500,
       description: "しっかり応援。新機能の開発が進みます。",
+      icon: (
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-700">
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            className="h-6 w-6"
+          >
+            <path
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M8 7h8v10a3 3 0 0 1-3 3h-2a3 3 0 0 1-3-3V7Z"
+            />
+            <path
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M16 9h1a2 2 0 1 1 0 4h-1"
+            />
+            <path
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M10 4h4"
+            />
+          </svg>
+        </div>
+      ),
       href: safeLink(process.env.SUPPORT_LINK_COFFEE_VENTI_500)
     },
     {
       label: "ビックマックセット",
       amountYen: 750,
       description: "全力応援。大きめの改善に時間を使えます。",
+      icon: (
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-700">
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            className="h-6 w-6"
+          >
+            <path
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6 10c1.2-2 3.6-3 6-3s4.8 1 6 3"
+            />
+            <path
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6 12h12"
+            />
+            <path
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M7 14h10"
+            />
+            <path
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6.5 17h11a2 2 0 0 0 2-2v-1H4.5v1a2 2 0 0 0 2 2Z"
+            />
+          </svg>
+        </div>
+      ),
       href: safeLink(process.env.SUPPORT_LINK_BIGMAC_SET_750)
     }
   ];
@@ -49,14 +146,19 @@ export default function PricingPage() {
       <section className="grid gap-6 lg:grid-cols-3">
         {options.map((o) => (
           <div key={o.label} className="card-surface p-6">
-            <div className="text-lg font-bold text-slate-900">{o.label}</div>
-            <div className="mt-2 flex items-end gap-2">
-              <span className="text-4xl font-black text-slate-900">
-                ¥{o.amountYen.toLocaleString("ja-JP")}
-              </span>
-              <span className="pb-1 text-sm text-slate-500">/回</span>
+            <div className="flex items-start gap-4">
+              {o.icon}
+              <div className="min-w-0">
+                <div className="text-lg font-bold text-slate-900">{o.label}</div>
+                <div className="mt-2 flex items-end gap-2">
+                  <span className="text-4xl font-black text-slate-900">
+                    ¥{o.amountYen.toLocaleString("ja-JP")}
+                  </span>
+                  <span className="pb-1 text-sm text-slate-500">/回</span>
+                </div>
+                <div className="mt-2 text-sm text-slate-600">{o.description}</div>
+              </div>
             </div>
-            <div className="mt-2 text-sm text-slate-600">{o.description}</div>
 
             {o.href ? (
               <a
