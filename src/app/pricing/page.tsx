@@ -44,6 +44,9 @@ export default function PricingPage() {
         <p className="text-sm text-slate-600">
           YOMIBOの開発を応援してくれたら嬉しいです（単発の支援です）。
         </p>
+        <p className="text-sm text-slate-600">
+          いつもYOMIBOを楽しく使っていただき、ありがとうございます。
+        </p>
       </section>
 
       <section className="grid gap-6 lg:grid-cols-3">
