@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const PUBLIC_PATHS = new Set(["/", "/login", "/signup", "/pricing", "/invite"]);
+const INVITE_COOKIE_NAME = "yomibo.invite";
+
+function truthyEnv(v: string | undefined) {
+  const s = (v ?? "").toLowerCase().trim();
+  return s === "1" || s === "true" || s === "yes" || s === "on";
+}
+
+function isInviteRequired() {
+  return truthyEnv(process.env.INVITE_REQUIRED);
+}
 
 function hasSessionCookie(req: NextRequest) {
   // next-auth(v4) / auth.js(v5) の代表的なCookie名を幅広く見る
@@ -27,6 +37,17 @@ export default function middleware(req: NextRequest) {
   }
 
   const pathname = nextUrl.pathname;
+
+  // 新規登録の前に招待コード入力を挟む（CuraQと同じ体験）
+  // ※ 実際の登録可否は /api/auth/signup 側でも検証しているため、ここはUX目的の誘導。
+  if (pathname === "/signup" && isInviteRequired()) {
+    const inviteCookie = req.cookies.get(INVITE_COOKIE_NAME)?.value;
+    if (!inviteCookie) {
+      const url = new URL("/invite", nextUrl);
+      url.searchParams.set("next", "/signup");
+      return NextResponse.redirect(url);
+    }
+  }
 
   if (PUBLIC_PATHS.has(pathname)) return NextResponse.next();
   if (pathname.startsWith("/api/auth")) return NextResponse.next();

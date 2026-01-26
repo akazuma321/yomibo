@@ -111,7 +111,7 @@ export default function HomePage() {
                       ログイン
                     </Link>
                     <Link
-                      href="/signup"
+                      href="/invite?next=/signup"
                       className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-4 py-1.5 text-[11px] font-medium text-slate-800 hover:border-brand-500"
                     >
                       新規登録
@@ -179,7 +179,7 @@ export default function HomePage() {
                       ログイン
                     </Link>
                     <Link
-                      href="/signup"
+                      href="/invite?next=/signup"
                       className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-4 py-1.5 text-[11px] font-medium text-slate-800 hover:border-brand-500"
                     >
                       新規登録
@@ -296,7 +296,7 @@ export default function HomePage() {
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
-              href="/signup"
+              href="/invite?next=/signup"
               className="inline-flex min-w-[220px] items-center justify-center rounded-full bg-white px-8 py-3 text-sm font-semibold text-brand-700 hover:bg-white/90 md:py-3.5 md:text-base"
             >
               無料ではじめる

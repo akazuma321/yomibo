@@ -151,7 +151,7 @@ export default function LoginClient() {
 
         <p className="text-center text-xs text-slate-600">
           はじめてですか？{" "}
-          <Link href="/signup" className="font-medium text-brand-700 hover:underline">
+          <Link href="/invite?next=/signup" className="font-medium text-brand-700 hover:underline">
             新規登録
           </Link>
         </p>
