@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 interface Article {
@@ -14,7 +14,7 @@ interface Article {
   tags: string[];
 }
 
-export default function ArticlesPage() {
+function ArticlesPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const selectedTag = searchParams.get("tag");
@@ -342,5 +342,15 @@ export default function ArticlesPage() {
         )}
       </section>
     </div>
+  );
+}
+
+export default function ArticlesPage() {
+  return (
+    <Suspense
+      fallback={<div className="mx-auto max-w-3xl py-10 text-sm text-slate-500">読み込み中...</div>}
+    >
+      <ArticlesPageInner />
+    </Suspense>
   );
 }

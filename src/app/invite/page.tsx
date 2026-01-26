@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 
-export default function InvitePage() {
+function InvitePageInner() {
   const router = useRouter();
   const sp = useSearchParams();
   const next = sp.get("next") || "/signup";
@@ -86,3 +86,12 @@ export default function InvitePage() {
   );
 }
 
+export default function InvitePage() {
+  return (
+    <Suspense
+      fallback={<div className="mx-auto max-w-md py-10 text-sm text-slate-500">読み込み中...</div>}
+    >
+      <InvitePageInner />
+    </Suspense>
+  );
+}
