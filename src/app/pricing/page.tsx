@@ -146,8 +146,7 @@ export default function PricingPage() {
       <section className="grid gap-6 lg:grid-cols-3">
         {options.map((o) => (
           <div key={o.label} className="card-surface p-6">
-            <div className="flex items-start gap-4">
-              {o.icon}
+            <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <div className="text-lg font-bold text-slate-900">{o.label}</div>
                 <div className="mt-2 flex items-end gap-2">
@@ -158,6 +157,7 @@ export default function PricingPage() {
                 </div>
                 <div className="mt-2 text-sm text-slate-600">{o.description}</div>
               </div>
+              <div className="shrink-0">{o.icon}</div>
             </div>
 
             {o.href ? (
