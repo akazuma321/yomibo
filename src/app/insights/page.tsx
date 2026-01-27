@@ -87,14 +87,8 @@ export default function InsightsPage() {
     };
     window.addEventListener("focus", handleFocus);
 
-    // 定期的に更新（30秒ごと）
-    const interval = setInterval(() => {
-      fetchInsights(weekOffset);
-    }, 30000);
-
     return () => {
       window.removeEventListener("focus", handleFocus);
-      clearInterval(interval);
     };
   }, [weekOffset]);
 
