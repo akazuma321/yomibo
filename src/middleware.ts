@@ -67,6 +67,6 @@ export default function middleware(req: NextRequest) {
 export const config = {
   // 127.0.0.1→localhost の正規化を含め、広めに適用する。
   // その上でPUBLIC_PATHS等で挙動を分岐する。
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"]
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"]
 };
 
