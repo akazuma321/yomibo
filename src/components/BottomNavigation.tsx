@@ -99,9 +99,7 @@ export default function BottomNavigation() {
                 key={item.href}
                 href={item.href}
                 className={`flex flex-1 flex-col items-center gap-1 rounded px-2 py-1 transition-colors ${
-                  isActive
-                    ? "bg-brand-100 text-brand-700"
-                    : "text-slate-900"
+                  isActive ? "bg-brand-100 text-brand-700" : "text-slate-900"
                 } hover:bg-brand-500 hover:text-white`}
               >
                 <span className="h-5 w-5">{item.icon}</span>

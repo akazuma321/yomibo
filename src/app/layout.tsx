@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import BottomNavigation from "@/components/BottomNavigation";
 import HeaderAuthButton from "@/components/HeaderAuthButton";
-import AuthProvider from "@/components/AuthProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -30,9 +29,7 @@ export default function RootLayout({
                 </div>
               </div>
             </Link>
-            <AuthProvider>
-              <HeaderAuthButton />
-            </AuthProvider>
+            <HeaderAuthButton />
           </header>
           <main className="flex-1 pb-40">{children}</main>
         </div>

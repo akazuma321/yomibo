@@ -1,10 +1,9 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
+import { listArticlesForUser, shouldUseFallbackStore } from "@/lib/fallback-store";
 
-interface Article {
+type HomeCardArticle = {
   id: string;
   url: string;
   title: string;
@@ -12,38 +11,10 @@ interface Article {
   readAt?: string | null;
   createdAt: string;
   tags: string[];
-}
+};
 
-export default function HomeRecentCards() {
-  const { status } = useSession();
-  const [recentArticles, setRecentArticles] = useState<Article[]>([]);
-  const [recentReadArticles, setRecentReadArticles] = useState<Article[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    (async () => {
-      if (status !== "authenticated") {
-        setLoading(false);
-        return;
-      }
-      try {
-        const res = await fetch("/api/articles");
-        const data = await res.json();
-        if (res.ok && data.articles) {
-          const unread = (data.articles as Article[]).filter((a) => !a.readAt).slice(0, 2);
-          const read = (data.articles as Article[]).filter((a) => a.readAt).slice(0, 2);
-          setRecentArticles(unread);
-          setRecentReadArticles(read);
-        }
-      } catch (e) {
-        console.error("Failed to fetch articles:", e);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [status]);
-
-  const AuthPrompt = ({ label }: { label: string }) => (
+function AuthPrompt({ label }: { label: string }) {
+  return (
     <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-3 text-slate-600">
       <p className="mb-2 text-xs">{label}</p>
       <div className="flex gap-2">
@@ -62,6 +33,103 @@ export default function HomeRecentCards() {
       </div>
     </div>
   );
+}
+
+async function fetchRecent(userId: string): Promise<{
+  unread: HomeCardArticle[];
+  read: HomeCardArticle[];
+}> {
+  if (shouldUseFallbackStore()) {
+    const all = await listArticlesForUser(userId, 50);
+    const unread = all.filter((a) => !a.readAt).slice(0, 2);
+    const read = all.filter((a) => a.readAt).slice(0, 2);
+    return {
+      unread: unread.map((a) => ({
+        id: a.id,
+        url: a.url,
+        title: a.title,
+        summary: a.summary,
+        readAt: a.readAt ? String(a.readAt) : null,
+        createdAt: new Date(a.createdAt).toISOString(),
+        tags: a.tags ?? []
+      })),
+      read: read.map((a) => ({
+        id: a.id,
+        url: a.url,
+        title: a.title,
+        summary: a.summary,
+        readAt: a.readAt ? String(a.readAt) : null,
+        createdAt: new Date(a.createdAt).toISOString(),
+        tags: a.tags ?? []
+      }))
+    };
+  }
+
+  const [unread, read] = await Promise.all([
+    prisma.article.findMany({
+      where: { userId, readAt: null },
+      orderBy: { createdAt: "desc" },
+      take: 2,
+      include: { tags: { include: { tag: true } } }
+    }),
+    prisma.article.findMany({
+      where: { userId, readAt: { not: null } },
+      orderBy: { readAt: "desc" },
+      take: 2,
+      include: { tags: { include: { tag: true } } }
+    })
+  ]);
+
+  return {
+    unread: unread.map((a) => ({
+      id: a.id,
+      url: a.url,
+      title: a.title,
+      summary: a.summary,
+      readAt: a.readAt ? a.readAt.toISOString() : null,
+      createdAt: a.createdAt.toISOString(),
+      tags: a.tags.map((at) => at.tag.name)
+    })),
+    read: read.map((a) => ({
+      id: a.id,
+      url: a.url,
+      title: a.title,
+      summary: a.summary,
+      readAt: a.readAt ? a.readAt.toISOString() : null,
+      createdAt: a.createdAt.toISOString(),
+      tags: a.tags.map((at) => at.tag.name)
+    }))
+  };
+}
+
+export default async function HomeRecentCards() {
+  const session = await auth();
+  const userId = (session?.user as any)?.id as string | undefined;
+
+  if (!userId) {
+    return (
+      <div className="space-y-6">
+        <div className="card-surface relative overflow-hidden p-6">
+          <div className="mb-4 flex items-center justify-between text-xs text-slate-500">
+            <span>最新の保存ログ</span>
+            <span>-</span>
+          </div>
+          <AuthPrompt label="ログインすると保存ログが表示されます。" />
+        </div>
+
+        <div className="card-surface relative overflow-hidden p-6">
+          <div className="mb-4 flex items-center justify-between text-xs text-slate-500">
+            <span>最新の読了ログ</span>
+            <span>-</span>
+          </div>
+          <AuthPrompt label="ログインすると読了ログが表示されます。" />
+        </div>
+      </div>
+    );
+  }
+
+  const { unread: recentArticles, read: recentReadArticles } =
+    await fetchRecent(userId);
 
   return (
     <div className="space-y-6">
@@ -72,11 +140,7 @@ export default function HomeRecentCards() {
           <span>{recentArticles.length}件</span>
         </div>
         <div className="space-y-3 text-xs">
-          {status !== "authenticated" ? (
-            <AuthPrompt label="ログインすると保存ログが表示されます。" />
-          ) : loading ? (
-            <div className="text-slate-500">読み込み中...</div>
-          ) : recentArticles.length === 0 ? (
+          {recentArticles.length === 0 ? (
             <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-3 text-slate-600">
               <p className="mb-2 text-xs">まだ保存された記事がありません。</p>
               <p className="text-[11px] text-slate-500">
@@ -118,11 +182,7 @@ export default function HomeRecentCards() {
           <span>{recentReadArticles.length}件</span>
         </div>
         <div className="space-y-3 text-xs">
-          {status !== "authenticated" ? (
-            <AuthPrompt label="ログインすると読了ログが表示されます。" />
-          ) : loading ? (
-            <div className="text-slate-500">読み込み中...</div>
-          ) : recentReadArticles.length === 0 ? (
+          {recentReadArticles.length === 0 ? (
             <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-3 text-slate-600">
               <p className="mb-2 text-xs">まだ読了した記事がありません。</p>
               <p className="text-[11px] text-slate-500">

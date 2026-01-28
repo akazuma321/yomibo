@@ -1,5 +1,5 @@
 import Link from "next/link";
-import AuthProvider from "@/components/AuthProvider";
+import { Suspense } from "react";
 import HomeRecentCards from "./HomeRecentCards";
 
 export default function HomePage() {
@@ -47,9 +47,15 @@ export default function HomePage() {
           </div>
         </div>
         <div className="animate-fade-up animate-fade-up-delay-2 mt-16 w-full max-w-md md:mt-6">
-          <AuthProvider>
+          <Suspense
+            fallback={
+              <div className="card-surface p-6 text-xs text-slate-500">
+                読み込み中...
+              </div>
+            }
+          >
             <HomeRecentCards />
-          </AuthProvider>
+          </Suspense>
         </div>
       </section>
 
