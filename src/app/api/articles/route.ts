@@ -11,6 +11,15 @@ import {
   listArticlesForUser
 } from "@/lib/fallback-store";
 
+function hostnameOrUrl(rawUrl: string) {
+  try {
+    const u = new URL(rawUrl);
+    return u.hostname.replace(/^www\./, "") || rawUrl;
+  } catch {
+    return rawUrl;
+  }
+}
+
 // GET: 最近追加した記事一覧
 export async function GET() {
   try {
@@ -65,13 +74,14 @@ export async function GET() {
 // POST: URL を登録（簡易的にタイトル・要約はダミー）
 export async function POST(req: NextRequest) {
   try {
-    const { url } = await req.json();
+    const { url, mode } = await req.json();
     if (!url || typeof url !== "string") {
       return NextResponse.json(
         { error: "url が必要です" },
         { status: 400 }
       );
     }
+    const fastMode = mode === "fast";
 
     const session = await auth();
     const userId = (session?.user as any)?.id as string | undefined;
@@ -80,6 +90,58 @@ export async function POST(req: NextRequest) {
     }
     const userEmail = (session?.user as any)?.email as string | undefined;
     const userName = (session?.user as any)?.name as string | undefined;
+
+    // 体感速度を優先: まずは即保存して返す（重い処理は /api/articles/[id]/update-title に逃がす）
+    if (fastMode) {
+      const title = hostnameOrUrl(url);
+      const summary: string | null = null;
+      const bodyLength: number | null = null;
+      const embeddingJson: string | null = null;
+
+      if (shouldUseFallbackStore()) {
+        const article = await createArticleForUser(userId, {
+          userEmail: userEmail ? String(userEmail) : null,
+          userName: userName ? String(userName) : null,
+          url,
+          title,
+          summary,
+          bodyLength,
+          embedding: embeddingJson,
+          tags: [],
+          readAt: null
+        });
+        return NextResponse.json({
+          storage: "fallback",
+          article: { ...article, tags: article.tags ?? [] }
+        });
+      }
+
+      const article = await prisma.article.create({
+        data: {
+          url,
+          title,
+          summary,
+          bodyLength,
+          userId,
+          embedding: embeddingJson
+        }
+      });
+
+      return NextResponse.json({
+        storage: "db",
+        article: {
+          id: article.id,
+          url: article.url,
+          title: article.title,
+          summary: article.summary,
+          bodyLength: article.bodyLength,
+          readAt: article.readAt ? article.readAt.toISOString() : null,
+          createdAt: article.createdAt.toISOString(),
+          updatedAt: article.updatedAt.toISOString(),
+          tags: []
+        }
+      });
+    }
 
     // URLからタイトル、説明、本文の文字数を取得
     let title = url;

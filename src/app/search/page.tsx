@@ -8,9 +8,11 @@ interface Article {
   url: string;
   title: string;
   summary?: string | null;
+  bodyLength?: number | null;
   readAt?: string | null;
   createdAt: string;
   tags?: string[];
+  _enriching?: boolean;
 }
 
 export default function SearchPage() {
@@ -18,6 +20,7 @@ export default function SearchPage() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Article[]>([]);
   const [loading, setLoading] = useState(false);
+  const [urlSaving, setUrlSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dbMode, setDbMode] = useState<"db" | "fallback" | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -83,13 +86,13 @@ export default function SearchPage() {
     if (!/^https?:\/\//i.test(url)) {
       url = `https://${url}`;
     }
-    setLoading(true);
+    setUrlSaving(true);
     setError(null);
     try {
       const res = await fetch("/api/articles", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url })
+        body: JSON.stringify({ url, mode: "fast" })
       });
       if (res.status === 401) {
         router.push("/login?from=/search");
@@ -106,15 +109,38 @@ export default function SearchPage() {
       if (!res.ok) {
         throw new Error(data.error || "保存に失敗しました");
       }
-      setResults((prev) => [data.article, ...prev]);
+      const created: Article = { ...(data.article as Article), _enriching: true };
+      setResults((prev) => [created, ...prev]);
       if (formRef.current) {
         formRef.current.reset();
       }
+
+      // 重い処理（タイトル/要約/埋め込み/タグ付け）は後で回す
+      // UIはブロックせず、完了したら該当記事だけ更新する
+      fetch(`/api/articles/${encodeURIComponent(created.id)}/update-title`, {
+        method: "POST"
+      })
+        .then(async (r) => {
+          const json = await r.json().catch(() => null);
+          if (!r.ok || !json?.article) return;
+          const updated = json.article as Article;
+          setResults((prev) =>
+            prev.map((a) =>
+              a.id === created.id ? { ...updated, _enriching: false } : a
+            )
+          );
+        })
+        .catch((err) => {
+          console.error("背景解析に失敗:", err);
+          setResults((prev) =>
+            prev.map((a) => (a.id === created.id ? { ...a, _enriching: false } : a))
+          );
+        });
     } catch (e: any) {
       console.error("URL追加エラー:", e);
       setError(e.message ?? "保存に失敗しました。データベースが初期化されているか確認してください。");
     } finally {
-      setLoading(false);
+      setUrlSaving(false);
     }
   };
 
@@ -197,7 +223,7 @@ export default function SearchPage() {
       <section className="space-y-3">
         <div className="flex items-center justify-between text-xs text-slate-600">
           <span>結果</span>
-          {loading && <span>処理中...</span>}
+          {(loading || urlSaving) && <span>処理中...</span>}
         </div>
         <div className="space-y-3">
           {results.map((article) => (
@@ -215,6 +241,11 @@ export default function SearchPage() {
                   {article.title || article.url}
                 </a>
                 <div className="flex items-center gap-2">
+                  {article._enriching && (
+                    <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] text-slate-500">
+                      解析中...
+                    </span>
+                  )}
                   {article.tags && article.tags.length > 0 && (
                     <div className="hidden max-w-[55%] flex-wrap justify-end gap-1 md:flex">
                       {article.tags.slice(0, 4).map((t) => (
