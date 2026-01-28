@@ -187,7 +187,7 @@ export default function PricingPage() {
       <section className="card-surface space-y-3 p-7 text-sm text-slate-700">
         <h2 className="text-lg font-bold text-slate-900">メモ</h2>
         <p>
-          これはサブスクではなく、単発の支援です。ボタンは外部の決済ページ（PayPayの支払いリンク/Stripe Payment Link など）を開きます。
+          これはサブスクではなく、単発の支援です。ボタンは外部の決済ページ（Squareの決済リンク/Stripe Payment Link/PayPayの支払いリンク など）を開きます。
         </p>
         <p className="text-xs text-slate-500">
           管理者は環境変数にリンクを設定するだけで有効化できます（未設定の場合は「準備中」表示）。
